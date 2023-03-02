@@ -1,27 +1,30 @@
 const mongoose=require("mongoose");
-
+ 
 const messageSchema=new mongoose.Schema({
-    gap:{
-        type:mongoose.Schema.Types.objectId,
-        ref:"Gap",
+    chat:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Chat",
         required:[true,"پیام باید متعلق به یک گفتگو باشد"]
     },
     type:{
         type:String,
-        enum:["message","service","file"],
+        enum:["message","service"],
         default:"message"
     },
     from:String,
-    fromId:{
-        type:mongoose.Schema.Types.objectId,
+    from_id:{
+        type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         required:[true,"پیام باید متعلق به یک فرد باشد"]
     },
-    replyToMessageId:{
-        type:mongoose.Schema.Types.objectId,
+    forwarded_from:String, //"کانال سیب"
+    reply_to_message_id:{
+        type:mongoose.Schema.Types.ObjectId,
         ref:"Message"
     },
-    content:String
+    file:String,//file path
+    mime_type:String,//"video/mp4", "application/pdf", "image/png"
+    text:String
 },{
     toJson: { virtuals: true },
     toObject: { virtuals: true },
