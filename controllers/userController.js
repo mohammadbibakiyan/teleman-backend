@@ -59,15 +59,15 @@ exports.checkOtp=catchAsync(async(req,res,next)=>{
   const {phone_number,code}=req.body;
   const user=await User.findOne({phone_number});
   if(!user) return next(createHttpError.NotFound("کاربری یافت نشد"));
-  if(!user.otp.code===code)return  next(createHttpError.BadRequest("کد وارد شده صحیح نمی باشد"));
+  if(!(user.otp.code===code))return next(createHttpError.BadRequest("کد وارد شده صحیح نمی باشد"));
   if(Date.now()>user.otp.expires_in)return  next(createHttpError.BadRequest("انقضای کد به پایان رسیده است"));
   await createSendToken(user,StatusCodes.OK,res,"ورود با موفقیت انجام شد");
 });
 
 exports.updateMe=catchAsync(async(req,res,next)=>{
   let profile_pictures;
-  if(req.file) profile_pictures=[req.file.path.replace("\\","/")];
+  if(req.file) profile_pictures=[{photo:req.file.path.replaceAll("\\","/")}];
   const data=deleteInvalidProperty({...req.body,profile_pictures},["first_name","last_name","username","profile_pictures"]);
-  const user=await User.updateOne({id:req.user._id},data);
-  res.status(StatusCodes.OK).json({message:"تغییرات با موفقیت انجام شد",user});
+  await User.findOneAndUpdate({id:req.user._id},data);
+  res.status(StatusCodes.OK).json({message:"تغییرات با موفقیت انجام شد"});
 })

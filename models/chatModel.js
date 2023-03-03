@@ -7,16 +7,20 @@ const chatSchema=new mongoose.Schema({
         required:[true,"نوع گفتگو باید مشخص باشد"]
     },
     users:[{
-        type:mongoose.Schema.Types.objectId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:"User"
     }],
+    admin:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User"
+    }
 },{
     toJson: { virtuals: true },
     toObject: { virtuals: true },
     timestamps: true 
 });
 
-productSchema.virtual("messages", {
+chatSchema.virtual("messages", {
     ref: "Message",
     foreignField: "chat",
     localField: "_id",

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
   first_name: { type: String },
   last_name: { type: String },
-  phone_number: { type: Number, unique: true, required:[true,"افزودن شماره الزامی است"]},
+  phone_number: { type: String, unique: true, required:[true,"افزودن شماره الزامی است"]},
   username: { type: String, unique: true, lowerCase:true },
   profile_pictures: [{
     date: {type:Date,default:Date.now()},
@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     {
       first_name: { type: String},
       last_name: { type: String },
-      phone_number: { type: Number},
+      phone_number: { type: String},
     },
   ],
   chats: [{
@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     ref:"Chat"
   }],
   otp : {
-    code : Number,
+    code : String,
     expires_in : Date
   },
 },{
