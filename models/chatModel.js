@@ -10,6 +10,7 @@ const chatSchema=new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
     }],
+    picture:String,
     admin:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"

@@ -1,4 +1,4 @@
-const createHttpError=require("http-errors");
+const AppError=require("./../utils/appError");
 const multer =require("multer");
 
 const storage=multer.diskStorage({
@@ -15,7 +15,7 @@ const fileFilter=(req,file,cb)=>{
   if(file.mimetype.startsWith('image')){
     cb(null,true);
   }else{
-    cb(createHttpError.BadRequest("لطفا یک عکس وارد کنید"))
+    cb(new AppError("لطفا یک عکس وارد کنید",400))
   }
 }
 

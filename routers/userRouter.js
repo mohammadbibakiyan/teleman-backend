@@ -5,6 +5,8 @@ const {uploadUserPhoto}=require("./../utils/uploadUserPhoto")
 
 userRouter.route("/getOtp").post(userController.getOtp);
 userRouter.route("/checkOtp").post(userController.checkOtp);
-userRouter.route("/updateMe").patch(userController.protect,uploadUserPhoto.single('image'),userController.updateMe);
+userRouter.use(userController.protect)
+userRouter.route("/updateMe").patch(uploadUserPhoto.single('image'),userController.updateMe);
+userRouter.route("/addContact").post(userController.addContact);
 
 module.exports=userRouter;

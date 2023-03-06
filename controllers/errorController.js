@@ -41,7 +41,6 @@ module.exports = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
   error.name = err.name;
-  // console.error("ERROR 💥", err.name, err.stack);
   if (error.name === "CastError") error = handleCastErrorDB(error);//invalid path
   if (error.name === "ValidationError") error = handleValidationErrorDB(error); //validation error in database
   if (error.code === 11000) error = handleDuplicateFieldsDB(error); //duplicate for uniqe data in database
