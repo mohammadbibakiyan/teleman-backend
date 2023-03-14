@@ -5,6 +5,7 @@ const catchAsync=require("../utils/catchAsync");
 const User=require("../models/userModel");
 const AppError=require("./../utils/appError")
 const {deleteInvalidProperty}=require("./../utils/functions");
+const {addContact} =require("./../validation/userValidation");
 
 const signToken = (_id) => {
     return jwt.sign({ _id }, process.env.JWT_SECRET, {
@@ -66,7 +67,7 @@ exports.checkOtp=catchAsync(async(req,res,next)=>{
 
 exports.updateMe=catchAsync(async(req,res,next)=>{
   let profile_pictures;
-  if(req.file) profile_pictures=[{photo:req.file.path.replaceAll("\\","/")}];
+  if(req.file) profile_pictures=[{photo:`/img/users/${req.file.filename}`}];
   const data=deleteInvalidProperty({...req.body,profile_pictures},["first_name","last_name","username","profile_pictures"]);
   await User.findByIdAndUpdate(req.user._id,data);
   res.status(StatusCodes.OK).json({status:"success",message:"تغییرات با موفقیت انجام شد"});
@@ -74,10 +75,18 @@ exports.updateMe=catchAsync(async(req,res,next)=>{
 
 exports.addContact=catchAsync(async(req,res,next)=>{
   const data=deleteInvalidProperty(req.body,["first_name","last_name","phone_number"]);
+  await addContact.validateAsync(data);
+  if(req.user.phone_number===data.phone_number) return next(new AppError("امکان افزودن شماره خودتان به عنوان مخاطب وجود ندارد",400))
   const user=await User.findOne({phone_number:data.phone_number});
   if(!user) return next(new AppError("کاربر مورد نظر در تل من حسابی ندارد",400));
   const contact=await User.findOne({_id:req.user._id,"contacts.phone_number":data.phone_number});
   if(contact) return next(new AppError("کاربر در لیست مخاطبین شما وجود دارد",400))
-  await User.findByIdAndUpdate(req.user._id,{$push:{contacts:data}});
+  await User.findByIdAndUpdate(req.user._id,{$push:{contacts:{...data,user:user._id}}});
   res.status(StatusCodes.OK).json({status:"success",message:"کاربر مورد نظر به لیست مخاطبین تان افزوده شد"})
+});
+
+exports.getMe=catchAsync(async(req,res,next)=>{
+  const user=await User.findById(req.user._id).populate("contacts.user","profile_pictures");
+  if(!user) return next(new AppError("کاربری یافت نشد"));
+  res.status(StatusCodes.OK).json({status:"success",data:user});
 });

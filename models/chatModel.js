@@ -1,6 +1,6 @@
 const mongoose=require("mongoose");
 const chatSchema=new mongoose.Schema({
-    name:String,
+    name:String, 
     type:{
         type:String,
         enum:["personal_chat","public_channel","public_group"],

@@ -46,5 +46,6 @@ module.exports = (err, req, res, next) => {
   if (error.code === 11000) error = handleDuplicateFieldsDB(error); //duplicate for uniqe data in database
   if (error.name === "JsonWebTokenError") error = handleJWTError(); //token is invalid error
   if (error.name === "TokenExpiredError") error = handleJWTExpiredError(); //expired token error
+  console.log(error);
   sendErrorDev(error, req, res);
 };
