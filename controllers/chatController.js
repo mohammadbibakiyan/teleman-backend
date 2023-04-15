@@ -7,10 +7,19 @@ const User=require("./../models/userModel");
 const Message=require("./../models/messageModel")
 
 exports.createChat=catchAsync(async(req,res,next)=>{
-  const data=deleteInvalidProperty({...req.body},["name","type","users"]);
-  data.users.push(req.user._id);
-  let chat=await Chat.findOne({users:{$all:data.users}});
-  if(!chat) chat=await Chat.create({...data,admin:req.user._id});
+  let picture;
+  if(req.file) picture=`/img/users/${req.file.filename}`
+  const data=deleteInvalidProperty({...req.body,picture},["name","type","users","picture"]);
+  console.log(data.users);
+  data?.users?.push(req.user._id);
+  let chat;
+  if(data.type==="personal_chat"){
+    chat=await Chat.findOne({users:{$all:data.users}});
+    if(!chat) chat=await Chat.create({...data,admin:req.user._id})
+  }else{
+    chat=await Chat.create({...data,admin:req.user._id})
+  }
+  console.log(chat);
   res.status(StatusCodes.OK).json({status:"success",data:chat});
 });
  
@@ -23,19 +32,22 @@ exports.getChat=catchAsync(async(req,res,next)=>{
     const user=await User.findById(userId,["first_name","last_name","profile_pictures"]);
     chat={...chat,name:user.first_name+" "+user.last_name,picture:user.profile_pictures[0]?.photo}
   }
+  if(chat.type==="public_channel"){
+    chat={...chat,admin:chat.admin.equals(req.user._id)}
+  }
   res.status(StatusCodes.OK).json({status:"success",data:chat})
 });
 
 exports.getAllChats=catchAsync(async(req,res,next)=>{
   let chats=await Chat.find({users:{"$in": [req.user._id]}},["name","type","picture","users"]).lean();
   chats=await Promise.all(chats.map(async e=>{
+    const last_message=await Message.findOne({chat:e._id},["createdAt","text"],{ sort: { 'createdAt' : -1 }}).lean();
     if(e.type==="personal_chat"){
       const [userId]=e.users.filter(e=>!e._id.equals(req.user._id));
       const user=await User.findById(userId,["first_name","last_name","profile_pictures"]).lean();
-      const last_message=await Message.findOne({chat:e._id},["createdAt","text"],{ sort: { 'createdAt' : -1 }}).lean();
       return{...e,name:user.first_name+" "+user.last_name,picture:user.profile_pictures[0]?.photo,last_message}
     }
-    return e;
+    return {...e,last_message};
   }))
   res.status(StatusCodes.OK).json({status:"success",data:chats})
 });
